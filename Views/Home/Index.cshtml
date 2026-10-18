@@ -1,0 +1,257 @@
+@model UniMarket.ViewModels.HomeIndexViewModel
+@{
+    ViewData["Title"] = "Trang chủ – Đồ tốt giá sinh viên";
+}
+
+<!-- ============================================================
+      HERO / BANNER
+ ============================================================ -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-inner">
+            <div class="hero-content">
+                <div class="hero-badge">🎓 Dành riêng cho cộng đồng sinh viên</div>
+                <h1 class="hero-title">
+                    Đồ tốt,<br />
+                    <span class="highlight">giá sinh viên.</span>
+                </h1>
+                <p class="hero-desc">
+                    Nền tảng mua bán đồ cũ dành cho sinh viên — tìm laptop, sách giáo trình,
+                    balo, quạt điện và nhiều đồ dùng học tập với giá ưu đãi, an toàn và tiện lợi.
+                </p>
+                <div class="hero-buttons">
+                    <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-white" style="padding:11px 24px;font-size:15px; font-weight:700;">
+                        🛍️ Khám phá sản phẩm
+                    </a>
+                    <a asp-controller="DangBan" asp-action="IndexDB" class="btn btn-accent" style="padding:11px 24px;font-size:15px; font-weight:700;">
+                        ＋ Đăng bán ngay
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-num">@Model.NewestProducts.Count+</div>
+                        <div class="hero-stat-label">Sản phẩm hiện có</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-num">@Model.Categories.Count</div>
+                        <div class="hero-stat-label">Danh mục đồ dùng</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-num">100%</div>
+                        <div class="hero-stat-label">Tiết kiệm chi phí</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="hero-illustration">
+                    <div class="illus-card">
+                        <div class="emoji">📚</div>
+                        <div class="label">Sách giáo trình</div>
+                    </div>
+                    <div class="illus-card">
+                        <div class="emoji">💻</div>
+                        <div class="label">Laptop</div>
+                    </div>
+                    <div class="illus-card">
+                        <div class="emoji">🎒</div>
+                        <div class="label">Balo</div>
+                    </div>
+                    <div class="illus-card">
+                        <div class="emoji">🚲</div>
+                        <div class="label">Xe đạp</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     DANH MỤC SẢN PHẨM
+============================================================ -->
+<section class="categories">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Danh mục <span>phổ biến</span></h2>
+            <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-outline" style="padding:7px 16px;font-size:13px;">
+                Xem tất cả danh mục →
+            </a>
+        </div>
+        <div class="cat-grid">
+            @foreach (var cat in Model.Categories)
+            {
+                <a asp-controller="MatHang" asp-action="IndexMH" asp-route-CategoryId="@cat.Id" class="cat-card">
+                    @* <div class="cat-icon cat-blue">@(cat.Icon ?? "📦")</div> *@
+                    <div class="cat-name">@cat.Name</div>
+                    <div class="cat-count">@(cat.Description ?? "Đồ dùng sinh viên")</div>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     SẢN PHẨM MỚI ĐĂNG
+============================================================ -->
+<section class="products" id="san-pham">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Sản phẩm <span>mới đăng</span></h2>
+            <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-outline" style="padding:7px 16px;font-size:13px;">
+                Xem tất cả sản phẩm →
+            </a>
+        </div>
+
+        <div class="product-grid">
+            @if (Model.NewestProducts.Any())
+            {
+                @foreach (var item in Model.NewestProducts)
+                {
+                    var mainImg = item.Images.FirstOrDefault(img => img.IsMain)?.ImageUrl 
+                                  ?? item.Images.FirstOrDefault()?.ImageUrl 
+                                  ?? "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=480&h=360&fit=crop&auto=format";
+                    
+                    var condBadgeClass = item.Condition switch
+                    {
+                        ProductCondition.New => "badge-new",
+                        ProductCondition.LikeNew => "badge-new",
+                        ProductCondition.Good => "badge-good",
+                        _ => "badge-used"
+                    };
+
+                    var condText = item.Condition switch
+                    {
+                        ProductCondition.New => "Mới 100%",
+                        ProductCondition.LikeNew => "Còn rất tốt (99%)",
+                        ProductCondition.Good => "Còn tốt",
+                        _ => "Đã qua dùng"
+                    };
+
+                    <article class="product-card" style="cursor:pointer;" onclick="location.href='@Url.Action("IndexCT", "CTMatHang", new { id = item.Id })'">
+                        <div class="product-img-wrap">
+                            <a asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@item.Id">
+                                <img src="@mainImg" alt="@item.Name" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=480&h=360&fit=crop&auto=format'" />
+                            </a>
+                            <button type="button" class="fav-btn" onclick="toggleFavorite(@item.Id, this, event)" title="Yêu thích">
+                                🤍
+                            </button>
+                            <span class="condition-badge @condBadgeClass">@condText</span>
+                        </div>
+
+                        <div class="product-body">
+                            <a asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@item.Id" class="product-name">
+                                @item.Name
+                            </a>
+
+                            <div class="product-price">@item.Price.ToString("N0") ₫</div>
+
+                            <div class="product-meta">
+                                <span>📍 @(item.Location ?? "TP.HCM")</span>
+                                <span>🕐 @item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</span>
+                            </div>
+
+                            <div style="margin-top:10px; display:flex; gap:8px;">
+                                <form asp-controller="Cart" asp-action="AddToCart" method="post" style="flex:1;" onclick="event.stopPropagation();">
+                                    <input type="hidden" name="productId" value="@item.Id" />
+                                    <input type="hidden" name="quantity" value="1" />
+                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                                    <button type="submit" class="btn btn-outline" style="width:100%; justify-content:center; padding:6px 12px; font-size:13px;">
+                                        🛒 Thêm vào giỏ
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </article>
+                }
+            }
+            else
+            {
+                <div style="grid-column: 1/-1; text-align:center; padding:40px; color:#6b7280;">
+                    Hiện chưa có sản phẩm nào được đăng tải.
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     GIÁ TỐT CHO SINH VIÊN (Dưới 500k)
+============================================================ -->
+@if (Model.StudentBudgetProducts.Any())
+{
+    <section class="products" style="background:#f3f4f6; padding: 40px 0;">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Giá tốt <span>dành cho sinh viên</span></h2>
+                    <p style="color:#6b7280; font-size:14px; margin-top:4px;">Các mặt hàng giá hạt dẻ dưới 500.000 ₫ giúp tiết kiệm tối đa ngân sách.</p>
+                </div>
+                <a asp-controller="MatHang" asp-action="IndexMH" asp-route-PriceRange="100to500" class="btn btn-outline" style="padding:7px 16px;font-size:13px;">
+                    Xem thêm →
+                </a>
+            </div>
+
+            <div class="product-grid">
+                @foreach (var item in Model.StudentBudgetProducts)
+                {
+                    var mainImg = item.Images.FirstOrDefault(img => img.IsMain)?.ImageUrl 
+                                  ?? item.Images.FirstOrDefault()?.ImageUrl 
+                                  ?? "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=480&h=360&fit=crop&auto=format";
+
+                    <article class="product-card" style="cursor:pointer;" onclick="location.href='@Url.Action("IndexCT", "CTMatHang", new { id = item.Id })'">
+                        <div class="product-img-wrap">
+                            <a asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@item.Id">
+                                <img src="@mainImg" alt="@item.Name" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=480&h=360&fit=crop&auto=format'" />
+                            </a>
+                            <button type="button" class="fav-btn" onclick="toggleFavorite(@item.Id, this, event)" title="Yêu thích">
+                                🤍
+                            </button>
+                            <span class="condition-badge badge-good">Giá rẻ sinh viên</span>
+                        </div>
+
+                        <div class="product-body">
+                            <a asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@item.Id" class="product-name">
+                                @item.Name
+                            </a>
+
+                            <div class="product-price">@item.Price.ToString("N0") ₫</div>
+
+                            <div class="product-meta">
+                                <span>📍 @(item.Location ?? "TP.HCM")</span>
+                                <span>🕐 @item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- ============================================================
+     CTA BANNER – ĐĂNG BÁN
+============================================================ -->
+<section class="cta-banner">
+    <div class="container">
+        <div class="cta-inner">
+            <div class="cta-content">
+                <h2 class="cta-title">Bạn có đồ không còn sử dụng?</h2>
+                <p class="cta-desc">
+                    Đăng bán chỉ vài phút, tiếp cận hàng nghìn sinh viên đang tìm mua.
+                    Hoàn toàn miễn phí, kết nối trực tiếp không qua trung gian.
+                </p>
+                <ul class="cta-benefits">
+                    <li>Đăng tin nhanh chóng &amp; Miễn phí</li>
+                    <li>Tiếp cận cộng đồng sinh viên các trường</li>
+                    <li>Giao dịch an toàn tại khuôn viên trường</li>
+                    <li>Bảo vệ quyền lợi đôi bên</li>
+                </ul>
+                <a asp-controller="DangBan" asp-action="IndexDB" class="btn btn-white" style="padding:13px 28px;font-size:15px;font-weight:700;">
+                    ＋ Đăng bán sản phẩm ngay
+                </a>
+            </div>
+            <div class="cta-visual">🛒</div>
+        </div>
+    </div>
+</section>

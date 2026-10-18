@@ -1,0 +1,283 @@
+@model UniMarket.ViewModels.ProductFilterViewModel
+@{
+    ViewData["Title"] = "Khám phá tất cả sản phẩm";
+}
+
+<!-- ============================================================
+     BREADCRUMB
+============================================================ -->
+<nav class="sp-breadcrumb" aria-label="Đường dẫn trang">
+    <div class="container">
+        <ol class="sp-breadcrumb-list">
+            <li><a asp-controller="Home" asp-action="Index">🏠 Trang chủ</a></li>
+            <li class="sp-sep">›</li>
+            <li class="sp-current">Tất cả sản phẩm</li>
+        </ol>
+    </div>
+</nav>
+
+<!-- ============================================================
+     HERO / TIÊU ĐỀ
+============================================================ -->
+<section class="sp-hero">
+    <div class="container">
+        <h1 class="sp-hero-title">Khám phá sản phẩm UniMarket</h1>
+        <p class="sp-hero-desc">
+            Tìm kiếm những món đồ hữu ích, chất lượng với mức giá phải chăng nhất dành cho sinh viên.
+        </p>
+    </div>
+</section>
+
+<!-- ============================================================
+     MAIN – BỘ LỌC + DANH SÁCH SẢN PHẨM
+============================================================ -->
+<main class="sp-main">
+    <div class="container">
+        <button class="sp-filter-toggle" id="filterToggleBtn" onclick="toggleFilter()">
+            ⚙️ Bộ lọc &amp; Sắp xếp
+        </button>
+
+        <div class="sp-layout">
+            <!-- ====================================================
+                 SIDEBAR BỘ LỌC
+            ==================================================== -->
+            <aside class="sp-sidebar" id="filterSidebar">
+                <form id="filterForm" asp-controller="MatHang" asp-action="IndexMH" method="get">
+                    <input type="hidden" name="Keyword" value="@Model.Keyword" />
+                    <input type="hidden" name="SortBy" value="@Model.SortBy" />
+
+                    <div class="sp-filter-header">
+                        <h3>🔧 Bộ lọc</h3>
+                        <a asp-controller="MatHang" asp-action="IndexMH" class="sp-filter-reset">
+                            Xóa tất cả
+                        </a>
+                    </div>
+
+                    <!-- Danh mục -->
+                    <div class="sp-filter-group">
+                        <div class="sp-filter-group-title">Danh mục sản phẩm</div>
+                        <label class="sp-filter-option">
+                            <input type="radio" name="CategoryId" value="0" @(Model.CategoryId == null || Model.CategoryId == 0 ? "checked" : "") onchange="this.form.submit()" />
+                            <span>Tất cả sản phẩm</span>
+                        </label>
+                        @foreach (var cat in Model.Categories)
+                        {
+                            <label class="sp-filter-option">
+                                <input type="radio" name="CategoryId" value="@cat.Id" @(Model.CategoryId == cat.Id ? "checked" : "") onchange="this.form.submit()" />
+                                <span> @cat.Name</span>
+                            </label>
+                        }
+                    </div>
+
+                    <!-- Khoảng giá -->
+                    <div class="sp-filter-group">
+                        <div class="sp-filter-group-title">Mức giá</div>
+                        <label class="sp-filter-option">
+                            <input type="radio" name="PriceRange" value="all" @(string.IsNullOrEmpty(Model.PriceRange) || Model.PriceRange == "all" ? "checked" : "") onchange="this.form.submit()" />
+                            <span>Tất cả mức giá</span>
+                        </label>
+                        <label class="sp-filter-option">
+                            <input type="radio" name="PriceRange" value="under100" @(Model.PriceRange == "under100" ? "checked" : "") onchange="this.form.submit()" />
+                            <span>Dưới 100.000 ₫</span>
+                        </label>
+                        <label class="sp-filter-option">
+                            <input type="radio" name="PriceRange" value="100to500" @(Model.PriceRange == "100to500" ? "checked" : "") onchange="this.form.submit()" />
+                            <span>100.000 ₫ – 500.000 ₫</span>
+                        </label>
+                        <label class="sp-filter-option">
+                            <input type="radio" name="PriceRange" value="500to1000" @(Model.PriceRange == "500to1000" ? "checked" : "") onchange="this.form.submit()" />
+                            <span>500.000 ₫ – 1.000.000 ₫</span>
+                        </label>
+                        <label class="sp-filter-option">
+                            <input type="radio" name="PriceRange" value="over1000" @(Model.PriceRange == "over1000" ? "checked" : "") onchange="this.form.submit()" />
+                            <span>Trên 1.000.000 ₫</span>
+                        </label>
+                    </div>
+
+                    <!-- Tình trạng -->
+                    <div class="sp-filter-group">
+                        <div class="sp-filter-group-title">Tình trạng đồ dùng</div>
+                        <label class="sp-filter-option">
+                            <input type="radio" name="Condition" value="" @(Model.Condition == null ? "checked" : "") onchange="this.form.submit()" />
+                            <span>Tất cả tình trạng</span>
+                        </label>
+                        <label class="sp-filter-option">
+                            <input type="radio" name="Condition" value="0" @(Model.Condition == ProductCondition.New ? "checked" : "") onchange="this.form.submit()" />
+                            <span>Mới 100%</span>
+                        </label>
+                        <label class="sp-filter-option">
+                            <input type="radio" name="Condition" value="1" @(Model.Condition == ProductCondition.LikeNew ? "checked" : "") onchange="this.form.submit()" />
+                            <span>Còn rất tốt (99%)</span>
+                        </label>
+                        <label class="sp-filter-option">
+                            <input type="radio" name="Condition" value="2" @(Model.Condition == ProductCondition.Good ? "checked" : "") onchange="this.form.submit()" />
+                            <span>Còn tốt</span>
+                        </label>
+                        <label class="sp-filter-option">
+                            <input type="radio" name="Condition" value="3" @(Model.Condition == ProductCondition.Used ? "checked" : "") onchange="this.form.submit()" />
+                            <span>Đã qua sử dụng</span>
+                        </label>
+                    </div>
+
+                    <!-- Nút thao tác -->
+                    <div class="sp-filter-actions">
+                        <button type="submit" class="sp-btn-apply">✔ Áp dụng bộ lọc</button>
+                        <a asp-controller="MatHang" asp-action="IndexMH" class="sp-btn-clear" style="text-align:center; text-decoration:none;">✕ Xóa bộ lọc</a>
+                    </div>
+                </form>
+            </aside>
+
+            <!-- ====================================================
+                 DANH SÁCH SẢN PHẨM
+            ==================================================== -->
+            <div class="sp-content">
+                <!-- Sort bar -->
+                <div class="sp-sort-bar">
+                    <div class="sp-result-count">
+                        Tìm thấy <strong>@Model.TotalItems</strong> sản phẩm
+                        @if (!string.IsNullOrWhiteSpace(Model.Keyword))
+                        {
+                            <span>với từ khóa "<em>@Model.Keyword</em>"</span>
+                        }
+                    </div>
+                    <div class="sp-sort-right">
+                        <span class="sp-sort-label">Sắp xếp:</span>
+                        <select class="sp-sort-select" id="sortSelect" onchange="changeSort(this.value)">
+                            <option value="newest" selected="@(Model.SortBy == "newest")">Mới đăng nhất</option>
+                            <option value="price-asc" selected="@(Model.SortBy == "price-asc")">Giá thấp đến cao</option>
+                            <option value="price-desc" selected="@(Model.SortBy == "price-desc")">Giá cao đến thấp</option>
+                        </select>
+                    </div>
+                </div>
+
+                @if (Model.Products.Any())
+                {
+                    <div class="sp-product-grid" id="productGrid">
+                        @foreach (var item in Model.Products)
+                        {
+                            var mainImg = item.Images.FirstOrDefault(img => img.IsMain)?.ImageUrl 
+                                          ?? item.Images.FirstOrDefault()?.ImageUrl 
+                                          ?? "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=480&h=360&fit=crop&auto=format";
+
+                            var condText = item.Condition switch
+                            {
+                                ProductCondition.New => "Mới 100%",
+                                ProductCondition.LikeNew => "Gần mới (99%)",
+                                ProductCondition.Good => "Còn tốt",
+                                _ => "Đã qua dùng"
+                            };
+
+                            <article class="product-card" style="cursor:pointer;" onclick="location.href='@Url.Action("IndexCT", "CTMatHang", new { id = item.Id })'">
+                                <div class="product-img-wrap">
+                                    <a asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@item.Id">
+                                        <img src="@mainImg" alt="@item.Name" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=480&h=360&fit=crop&auto=format'" />
+                                    </a>
+                                    <button type="button" class="fav-btn" onclick="toggleFavorite(@item.Id, this, event)" title="Yêu thích">
+                                        🤍
+                                    </button>
+                                    <span class="condition-badge badge-good">@condText</span>
+                                </div>
+                                <div class="product-body">
+                                    <div class="product-name">
+                                        <a asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@item.Id">
+                                            @item.Name
+                                        </a>
+                                    </div>
+                                    <div class="product-price">@item.Price.ToString("N0") ₫</div>
+                                    <div class="product-meta">
+                                        <span>📍 @(item.Location ?? "TP.HCM")</span>
+                                        <span>🕐 @item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</span>
+                                    </div>
+                                    <div class="sp-seller-chip">
+                                        <div class="sp-seller-avatar">@(item.Seller?.FullName?.Substring(0, 1) ?? "U")</div>
+                                        <span>@(item.Seller?.FullName ?? "Sinh viên UniMarket")</span>
+                                    </div>
+                                    <div style="margin-top:10px;">
+                                        <form asp-controller="Cart" asp-action="AddToCart" method="post" onclick="event.stopPropagation();">
+                                            <input type="hidden" name="productId" value="@item.Id" />
+                                            <input type="hidden" name="quantity" value="1" />
+                                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                            <button type="submit" class="btn btn-outline" style="width:100%; justify-content:center; padding:6px 12px; font-size:13px;">
+                                                🛒 Thêm vào giỏ
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+
+                    <!-- Phân trang -->
+                    @if (Model.TotalPages > 1)
+                    {
+                        <nav class="sp-pagination" aria-label="Phân trang">
+                            @if (Model.Page > 1)
+                            {
+                                <a class="sp-page-btn" asp-controller="MatHang" asp-action="IndexMH"
+                                   asp-route-Page="@(Model.Page - 1)"
+                                   asp-route-Keyword="@Model.Keyword"
+                                   asp-route-CategoryId="@Model.CategoryId"
+                                   asp-route-PriceRange="@Model.PriceRange"
+                                   asp-route-Condition="@Model.Condition"
+                                   asp-route-SortBy="@Model.SortBy">← Trước</a>
+                            }
+
+                            @for (int p = 1; p <= Model.TotalPages; p++)
+                            {
+                                <a class="sp-page-btn @(p == Model.Page ? "active" : "")" asp-controller="MatHang" asp-action="IndexMH"
+                                   asp-route-Page="@p"
+                                   asp-route-Keyword="@Model.Keyword"
+                                   asp-route-CategoryId="@Model.CategoryId"
+                                   asp-route-PriceRange="@Model.PriceRange"
+                                   asp-route-Condition="@Model.Condition"
+                                   asp-route-SortBy="@Model.SortBy">@p</a>
+                            }
+
+                            @if (Model.Page < Model.TotalPages)
+                            {
+                                <a class="sp-page-btn" asp-controller="MatHang" asp-action="IndexMH"
+                                   asp-route-Page="@(Model.Page + 1)"
+                                   asp-route-Keyword="@Model.Keyword"
+                                   asp-route-CategoryId="@Model.CategoryId"
+                                   asp-route-PriceRange="@Model.PriceRange"
+                                   asp-route-Condition="@Model.Condition"
+                                   asp-route-SortBy="@Model.SortBy">Sau →</a>
+                            }
+                        </nav>
+                    }
+                }
+                else
+                {
+                    <div class="sp-empty" id="emptyState" style="display:block; text-align:center; padding:60px 20px;">
+                        <div class="sp-empty-icon" style="font-size:48px;">🔍</div>
+                        <div class="sp-empty-title" style="font-size:20px; font-weight:700; margin:12px 0;">Không tìm thấy sản phẩm phù hợp</div>
+                        <div class="sp-empty-desc" style="color:#6b7280; margin-bottom:20px;">
+                            Thử tìm kiếm với từ khóa khác hoặc xóa bớt tiêu chí lọc để xem thêm sản phẩm.
+                        </div>
+                        <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-primary">
+                            ✕ Xóa bộ lọc &amp; xem tất cả
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        function toggleFilter() {
+            const sidebar = document.getElementById("filterSidebar");
+            sidebar.classList.toggle("open");
+            const btn = document.getElementById("filterToggleBtn");
+            btn.textContent = sidebar.classList.contains("open") ? "✕ Đóng bộ lọc" : "⚙️ Bộ lọc & Sắp xếp";
+        }
+
+        function changeSort(sortBy) {
+            const form = document.getElementById("filterForm");
+            form.querySelector('input[name="SortBy"]').value = sortBy;
+            form.submit();
+        }
+    </script>
+}
+

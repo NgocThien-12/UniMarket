@@ -1,0 +1,27 @@
+
+# Build output
+bin/
+obj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Visual Studio Code local settings
+.vscode/
+
+# Sensitive local configuration
+appsettings.Development.json
+secrets.json
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Operating system files
+.DS_Store
+Thumbs.db

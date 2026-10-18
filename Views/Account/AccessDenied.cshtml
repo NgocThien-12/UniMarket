@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Không có quyền truy cập";
+}
+
+<div class="container" style="padding: 60px 20px; text-align: center; max-width: 600px;">
+    <div style="background:#fff; border-radius:12px; border:1px solid #fee2e2; padding:40px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
+        <div style="font-size:60px; margin-bottom:15px;">🚫</div>
+        <h1 style="font-size:24px; font-weight:800; color:#991b1b; margin-bottom:12px;">Quyền truy cập bị từ chối</h1>
+        <p style="color:#6b7280; font-size:15px; margin-bottom:25px;">
+            Bạn không có quyền truy cập vào trang này. Khu vực này chỉ dành riêng cho Quản trị viên (Admin) hoặc tài khoản được phân quyền phù hợp.
+        </p>
+        <div style="display:flex; gap:12px; justify-content:center;">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                🏠 Về trang chủ
+            </a>
+            <a asp-controller="Account" asp-action="Login" class="btn btn-outline">
+                🔑 Đăng nhập bằng tài khoản khác
+            </a>
+        </div>
+    </div>
+</div>
+

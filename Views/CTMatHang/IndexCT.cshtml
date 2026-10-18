@@ -1,0 +1,219 @@
+@model UniMarket.ViewModels.ProductDetailViewModel
+@{
+    ViewData["Title"] = Model.Product.Name;
+    var mainImage = Model.Product.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl
+                    ?? Model.Product.Images.FirstOrDefault()?.ImageUrl
+                    ?? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&h=600&fit=crop&auto=format";
+
+    var condText = Model.Product.Condition switch
+    {
+        ProductCondition.New => "Mới 100%",
+        ProductCondition.LikeNew => "Còn rất tốt (99%)",
+        ProductCondition.Good => "Còn tốt",
+        _ => "Đã qua sử dụng"
+    };
+}
+
+<main class="pd-main">
+    <div class="container">
+
+        <!-- Breadcrumb -->
+        <div class="pd-breadcrumb sp-breadcrumb-list">
+            <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+            <span>/</span>
+            <a asp-controller="MatHang" asp-action="IndexMH" asp-route-CategoryId="@Model.Product.CategoryId">
+                @(Model.Product.Category?.Name ?? "Sản phẩm")
+            </a>
+            <span>/</span>
+            <span class="sp-current">@Model.Product.Name</span>
+        </div>
+
+        <!-- Main Detail Layout -->
+        <div class="pd-layout">
+
+            <!-- Left: Image Gallery -->
+            <div class="pd-gallery">
+                <div class="pd-main-img" id="mainImageContainer">
+                    <img id="mainImage" src="@mainImage" alt="@Model.Product.Name" loading="lazy" />
+                </div>
+                @if (Model.Product.Images.Count > 1)
+                {
+                    <div class="pd-thumb-list">
+                        @foreach (var img in Model.Product.Images)
+                        {
+                            <div class="pd-thumb @(img.ImageUrl == mainImage ? "active" : "")" onclick="changeImage(this, '@img.ImageUrl')">
+                                <img src="@img.ImageUrl" alt="Thumbnail" />
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Right: Info Card -->
+            <div class="pd-info-card">
+                <h1 class="pd-title">@Model.Product.Name</h1>
+
+                <div class="pd-price-row">
+                    <div class="pd-price">@Model.Product.Price.ToString("N0") ₫</div>
+                    <span class="condition-badge badge-good" style="position:static; font-size:13px; padding:4px 10px;">
+                        @condText
+                    </span>
+                </div>
+
+                <div class="pd-meta-list">
+                    <div class="pd-meta-item">
+                        <span class="icon">📍</span>
+                        <span>@(Model.Product.Location ?? "Khu đô thị Đại học Quốc gia TP.HCM")</span>
+                    </div>
+                    <div class="pd-meta-item">
+                        <span class="icon">🕐</span>
+                        <span>Đăng ngày @Model.Product.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    <div class="pd-meta-item">
+                        <span class="icon">📦</span>
+                        <span>Số lượng còn lại: <strong>@Model.Product.AvailableQuantity</strong></span>
+                    </div>
+                    <div class="pd-meta-item">
+                        <span class="icon">🛡️</span>
+                        <span>Giao dịch trực tiếp, kiểm tra hàng kỹ lưỡng trước khi nhận</span>
+                    </div>
+                </div>
+
+                <!-- Seller Info -->
+                <div class="pd-seller">
+                    <div class="pd-seller-avatar">@(Model.Product.Seller?.FullName?.Substring(0, 1) ?? "S")</div>
+                    <div class="pd-seller-info">
+                        <h4>@(Model.Product.Seller?.FullName ?? "Người bán UniMarket")</h4>
+                        <p>Sinh viên Đại học • <span>📞 @(Model.Product.Seller?.PhoneNumber ?? "Đã xác thực")</span></p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                @if (Model.IsOwner)
+                {
+                    <div style="background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:12px; border-radius:8px; margin-top:15px; font-weight:500;">
+                        ℹ️ Đây là tin đăng của bạn. Bạn có thể theo dõi trạng thái tại mục <a asp-controller="Account" asp-action="MyListings" style="text-decoration:underline; font-weight:700;">Tin đăng của tôi</a>.
+                    </div>
+                }
+                else if (!Model.Product.IsAvailable || Model.Product.AvailableQuantity < 1)
+                {
+                    <div style="background:#fee2e2; border:1px solid #fecaca; color:#991b1b; padding:12px; border-radius:8px; margin-top:15px; font-weight:600;">
+                        ❌ Sản phẩm này đã bán hoặc hiện không còn khả dụng.
+                    </div>
+                }
+                else
+                {
+                    <div class="pd-actions" style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; gap:10px;">
+                            <form asp-controller="Cart" asp-action="AddToCart" method="post" style="flex:1;">
+                                <input type="hidden" name="productId" value="@Model.Product.Id" />
+                                <input type="hidden" name="quantity" value="1" />
+                                <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:15px;">
+                                    🛒 Thêm vào giỏ hàng
+                                </button>
+                            </form>
+
+                            <button type="button" class="btn btn-outline" onclick="toggleFavorite(@Model.Product.Id, this, event)" style="padding:12px 16px;">
+                                @(Model.IsFavorite ? "❤️ Đã thích" : "🤍 Yêu thích")
+                            </button>
+                        </div>
+
+                        <!-- Mua ngay -->
+                        <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                            <input type="hidden" name="productId" value="@Model.Product.Id" />
+                            <input type="hidden" name="quantity" value="1" />
+                            <input type="hidden" name="returnUrl" value="/Order/Checkout" />
+                            <button type="submit" class="btn btn-accent" style="width:100%; justify-content:center; padding:12px; font-size:15px; background:var(--accent); color:white;">
+                                ⚡ Mua ngay
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+
+        </div> <!-- /.pd-layout -->
+
+        <!-- Details Section -->
+        <div class="pd-section" style="margin-top:40px;">
+            <h3 class="pd-section-title">Thông tin chi tiết</h3>
+
+            <div class="pd-specs">
+                <div class="pd-spec-row">
+                    <div class="pd-spec-label">Danh mục</div>
+                    <div class="pd-spec-value">@(Model.Product.Category?.Name ?? "Đồ dùng sinh viên")</div>
+                </div>
+                <div class="pd-spec-row">
+                    <div class="pd-spec-label">Tình trạng</div>
+                    <div class="pd-spec-value">@condText</div>
+                </div>
+                <div class="pd-spec-row">
+                    <div class="pd-spec-label">Khu vực bán</div>
+                    <div class="pd-spec-value">@(Model.Product.Location ?? "TP.HCM")</div>
+                </div>
+                <div class="pd-spec-row">
+                    <div class="pd-spec-label">Hình thức giao dịch</div>
+                    <div class="pd-spec-value">Gặp mặt trực tiếp tại trường hoặc ký túc xá</div>
+                </div>
+            </div>
+
+            <div class="pd-desc-content" style="white-space:pre-line; line-height:1.7; margin-top:20px; color:#374151;">
+                @Model.Product.Description
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        @if (Model.RelatedProducts.Any())
+        {
+            <div class="pd-section" style="background:transparent; border:none; padding:40px 0 0 0;">
+                <div class="section-header">
+                    <h2 class="section-title">Sản phẩm <span>cùng danh mục</span></h2>
+                    <a asp-controller="MatHang" asp-action="IndexMH" asp-route-CategoryId="@Model.Product.CategoryId" class="btn btn-outline" style="padding:7px 16px; font-size:13px;">
+                        Xem thêm →
+                    </a>
+                </div>
+                <div class="product-grid">
+                    @foreach (var rel in Model.RelatedProducts)
+                    {
+                        var relImg = rel.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl 
+                                     ?? rel.Images.FirstOrDefault()?.ImageUrl 
+                                     ?? "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=480&h=360&fit=crop&auto=format";
+
+                        <article class="product-card" style="cursor:pointer;" onclick="location.href='@Url.Action("IndexCT", "CTMatHang", new { id = rel.Id })'">
+                            <div class="product-img-wrap">
+                                <a asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@rel.Id">
+                                    <img src="@relImg" alt="@rel.Name" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=480&h=360&fit=crop&auto=format'" />
+                                </a>
+                                <button type="button" class="fav-btn" onclick="toggleFavorite(@rel.Id, this, event)" title="Yêu thích">🤍</button>
+                                <span class="condition-badge badge-good">Còn tốt</span>
+                            </div>
+                            <div class="product-body">
+                                <div class="product-name">
+                                    <a asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@rel.Id">
+                                        @rel.Name
+                                    </a>
+                                </div>
+                                <div class="product-price">@rel.Price.ToString("N0") ₫</div>
+                                <div class="product-meta">
+                                    <span>📍 @(rel.Location ?? "TP.HCM")</span>
+                                    <span>🕐 @rel.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</span>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        function changeImage(thumbElement, imgUrl) {
+            document.getElementById('mainImage').src = imgUrl;
+            document.querySelectorAll('.pd-thumb').forEach(el => el.classList.remove('active'));
+            thumbElement.classList.add('active');
+        }
+    </script>
+}
+

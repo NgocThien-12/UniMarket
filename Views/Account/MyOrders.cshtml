@@ -1,0 +1,73 @@
+@model List<UniMarket.Models.Order>
+@{
+    ViewData["Title"] = "Đơn mua của tôi";
+}
+
+<div class="container" style="padding: 40px 20px;">
+    <div style="margin-bottom:25px;">
+        <h1 style="font-size:24px; font-weight:800; color:#111827;">📋 Đơn mua hàng của tôi</h1>
+        <p style="color:#6b7280; font-size:14px; margin-top:4px;">Theo dõi tình trạng đơn đặt hàng và lịch sử mua sắm trên UniMarket.</p>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+            <table style="width:100%; border-collapse:collapse; text-align:left;">
+                <thead>
+                    <tr style="background:#f9fafb; border-bottom:1px solid #e5e7eb; font-size:13px; color:#4b5563;">
+                        <th style="padding:14px 16px;">Mã đơn</th>
+                        <th style="padding:14px 16px;">Ngày đặt</th>
+                        <th style="padding:14px 16px;">Người nhận &amp; Địa chỉ</th>
+                        <th style="padding:14px 16px;">Số lượng món</th>
+                        <th style="padding:14px 16px;">Tổng tiền</th>
+                        <th style="padding:14px 16px;">Trạng thái</th>
+                        <th style="padding:14px 16px; text-align:right;">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model)
+                    {
+                        var statusBadge = order.Status switch
+                        {
+                            OrderStatus.Pending => "<span style='background:#fef3c7; color:#92400e; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600;'>⏳ Chờ xác nhận</span>",
+                            OrderStatus.Confirmed => "<span style='background:#dbeafe; color:#1e40af; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600;'>✔ Đã xác nhận</span>",
+                            OrderStatus.Shipping => "<span style='background:#f3e8ff; color:#6b21a8; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600;'>🚚 Đang giao hàng</span>",
+                            OrderStatus.Completed => "<span style='background:#dcfce7; color:#166534; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600;'>🎉 Hoàn thành</span>",
+                            OrderStatus.Cancelled => "<span style='background:#fee2e2; color:#991b1b; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600;'>✕ Đã hủy</span>",
+                            _ => "—"
+                        };
+
+                        <tr style="border-bottom:1px solid #f3f4f6; font-size:14px;">
+                            <td style="padding:14px 16px; font-weight:700; color:#1a56db;">@order.OrderNumber</td>
+                            <td style="padding:14px 16px; color:#6b7280;">@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td style="padding:14px 16px;">
+                                <div style="font-weight:600;">@order.RecipientName</div>
+                                <div style="font-size:12px; color:#6b7280;">@order.PhoneNumber • @order.DeliveryAddress</div>
+                            </td>
+                            <td style="padding:14px 16px; color:#4b5563;">@order.Items.Sum(i => i.Quantity) món</td>
+                            <td style="padding:14px 16px; font-weight:700; color:#dc2626;">@order.TotalAmount.ToString("N0") ₫</td>
+                            <td style="padding:14px 16px;">@Html.Raw(statusBadge)</td>
+                            <td style="padding:14px 16px; text-align:right;">
+                                <a asp-controller="Order" asp-action="Details" asp-route-id="@order.Id" class="btn btn-outline" style="padding:5px 12px; font-size:12px;">
+                                    Xem đơn
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:60px 20px; text-align:center;">
+            <div style="font-size:48px; margin-bottom:12px;">🛒</div>
+            <h3 style="font-size:18px; font-weight:700; margin-bottom:8px;">Bạn chưa có đơn đặt hàng nào</h3>
+            <p style="color:#6b7280; font-size:14px; margin-bottom:20px;">Khám phá các sản phẩm sinh viên giá tốt trên UniMarket ngay hôm nay!</p>
+            <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-primary">
+                🛍️ Khám phá sản phẩm
+            </a>
+        </div>
+    }
+</div>
+

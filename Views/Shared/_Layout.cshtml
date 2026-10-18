@@ -1,0 +1,389 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Antiforgery
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject UniMarket.Services.ICartService CartService
+@inject IAntiforgery AntiforgeryService
+
+@{
+    var currentUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+    var cartCount = await CartService.GetCartItemCountAsync(currentUser?.Id);
+    var isAdmin = User.IsInRole("Admin");
+    var csrfTokens = AntiforgeryService.GetAndStoreTokens(Context);
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " – " : "")UniMarket – Chợ đồ cũ sinh viên</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+    <meta name="csrf-token" content="@csrfTokens.RequestToken" />
+    <style>
+        .cart-badge {
+            background: #dc2626;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 10px;
+            padding: 2px 7px;
+            margin-left: 4px;
+        }
+        .user-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .user-dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 110%;
+            background: #ffffff;
+            min-width: 210px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            z-index: 1000;
+            padding: 8px 0;
+        }
+        .user-dropdown:hover .user-dropdown-menu,
+        .user-dropdown:focus-within .user-dropdown-menu {
+            display: block;
+        }
+        .user-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background 0.15s ease;
+        }
+        .user-dropdown-item:hover {
+            background: #f3f4f6;
+            color: #1a56db;
+        }
+        .user-dropdown-divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 6px 0;
+        }
+        .alert-box {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 15px auto;
+            max-width: 1200px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+        }
+        .alert-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    </style>
+</head>
+
+<body>
+
+    <!-- ============================================================
+         HEADER
+    ============================================================ -->
+    <header class="site-header">
+        <div class="container">
+            <div class="header-inner">
+
+                <a asp-controller="Home" asp-action="Index" class="logo">
+                    <div class="logo-icon">U</div>
+                    <span class="logo-text">Uni<span>Market</span></span>
+                </a>
+
+                <div class="search-wrap">
+                    <form class="search-form" asp-controller="MatHang" asp-action="IndexMH" method="get">
+                        <input class="search-input" type="search" name="Keyword" placeholder="Tìm sách giáo trình, laptop, balo, quạt mini..." value="@Context.Request.Query["Keyword"]" />
+                        <button class="search-btn" type="submit" aria-label="Tìm kiếm">🔍</button>
+                    </form>
+                </div>
+
+                <div class="nav-actions">
+                    <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-outline" style="border:none; color:var(--text-main);">
+                        🛍️ Sản phẩm
+                    </a>
+
+                    <a asp-controller="Cart" asp-action="Index" class="btn btn-outline" style="position:relative;" title="Giỏ hàng">
+                        🛒 Giỏ hàng
+                        <span class="cart-badge" id="headerCartCount">@cartCount</span>
+                    </a>
+
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <div class="user-dropdown">
+                            <button type="button" class="btn btn-outline" style="font-weight:600;">
+                                👤 @(currentUser?.FullName ?? User.Identity?.Name) ▾
+                            </button>
+                            <div class="user-dropdown-menu">
+                                @if (isAdmin)
+                                {
+                                    <a asp-area="Admin" asp-controller="Dashboard" asp-action="IndexAdmin" class="user-dropdown-item" style="color:#dc2626; font-weight:700;">
+                                        ⚙️ Quản trị Admin
+                                    </a>
+                                    <div class="user-dropdown-divider"></div>
+                                }
+                                <a asp-controller="Account" asp-action="Profile" class="user-dropdown-item">
+                                    👤 Hồ sơ cá nhân
+                                </a>
+                                <a asp-controller="Account" asp-action="MyListings" class="user-dropdown-item">
+                                    📦 Tin đăng của tôi
+                                </a>
+                                <a asp-controller="Account" asp-action="MyOrders" class="user-dropdown-item">
+                                    📋 Đơn mua của tôi
+                                </a>
+                                <a asp-controller="Favorite" asp-action="Index" class="user-dropdown-item">
+                                    ❤️ Sản phẩm yêu thích
+                                </a>
+                                <div class="user-dropdown-divider"></div>
+                                <form asp-controller="Account" asp-action="Logout" method="post" style="margin:0;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="user-dropdown-item" style="width:100%; border:none; background:none; text-align:left; cursor:pointer;">
+                                        🚪 Đăng xuất
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <a asp-controller="DangBan" asp-action="IndexDB" class="btn-sell"><span>＋</span> Đăng bán</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline">Đăng nhập</a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Đăng ký</a>
+                        <a asp-controller="DangBan" asp-action="IndexDB" class="btn-sell"><span>＋</span> Đăng bán</a>
+                    }
+                </div>
+
+                <button class="hamburger" id="hamburgerBtn" aria-label="Mở menu" onclick="toggleMenu()">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobileMenu">
+            <form class="mobile-search" asp-controller="MatHang" asp-action="IndexMH" method="get">
+                <input type="search" name="Keyword" placeholder="Tìm sách, laptop, balo..." value="@Context.Request.Query["Keyword"]" />
+                <button type="submit" aria-label="Tìm kiếm">🔍</button>
+            </form>
+            <div style="display:flex; flex-direction:column; gap:8px; margin:12px 0;">
+                <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-outline" style="justify-content:center;">🛍️ Khám phá sản phẩm</a>
+                <a asp-controller="Cart" asp-action="Index" class="btn btn-outline" style="justify-content:center;">🛒 Giỏ hàng (@cartCount)</a>
+            </div>
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <a asp-controller="Account" asp-action="Profile" class="btn btn-outline" style="justify-content:center;">👤 Hồ sơ cá nhân</a>
+                    <a asp-controller="Account" asp-action="MyListings" class="btn btn-outline" style="justify-content:center;">📦 Tin đăng của tôi</a>
+                    <a asp-controller="Account" asp-action="MyOrders" class="btn btn-outline" style="justify-content:center;">📋 Đơn hàng</a>
+                    @if (isAdmin)
+                    {
+                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="IndexAdmin" class="btn btn-outline" style="justify-content:center; color:#dc2626;">⚙️ Quản trị Admin</a>
+                    }
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline" style="width:100%; justify-content:center;">🚪 Đăng xuất</button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="mobile-actions">
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline" style="flex:1;justify-content:center;">Đăng nhập</a>
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-primary" style="flex:1;justify-content:center;">Đăng ký</a>
+                </div>
+            }
+            <a asp-controller="DangBan" asp-action="IndexDB" class="btn-sell" style="justify-content:center; margin-top:10px;">＋ Đăng bán ngay</a>
+        </div>
+    </header>
+
+    <!-- Thông báo TempData -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="container">
+            <div class="alert-box alert-success">
+                <span>✅ @TempData["SuccessMessage"]</span>
+                <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer; font-weight:700;">✕</button>
+            </div>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="container">
+            <div class="alert-box alert-error">
+                <span>⚠️ @TempData["ErrorMessage"]</span>
+                <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer; font-weight:700;">✕</button>
+            </div>
+        </div>
+    }
+
+    <!-- NỘI DUNG CHÍNH -->
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- ============================================================
+         FOOTER
+    ============================================================ -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+
+                <div class="footer-brand">
+                    <a asp-controller="Home" asp-action="Index" class="logo">
+                        <div class="logo-icon">U</div>
+                        <span class="logo-text">Uni<span>Market</span></span>
+                    </a>
+                    <p class="footer-desc">
+                        Nền tảng mua bán đồ cũ dành riêng cho cộng đồng sinh viên các trường đại học.
+                        Kết nối người mua và người bán an toàn, tiện lợi, tiết kiệm chi phí học tập.
+                    </p>
+                    <div class="footer-social">
+                        <div class="social-btn" title="Facebook">📘</div>
+                        <div class="social-btn" title="Zalo">💬</div>
+                        <div class="social-btn" title="Instagram">📷</div>
+                        <div class="social-btn" title="TikTok">🎵</div>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Hỗ trợ sinh viên</h4>
+                    <ul class="footer-links">
+                        <li><a asp-controller="Home" asp-action="Index">Hướng dẫn mua bán</a></li>
+                        <li><a asp-controller="MatHang" asp-action="IndexMH">Tất cả sản phẩm</a></li>
+                        <li><a asp-controller="DangBan" asp-action="IndexDB">Đăng tin miễn phí</a></li>
+                        <li><a href="#an-toan">Mẹo mua bán an toàn</a></li>
+                        <li><a href="#faq">Câu hỏi thường gặp</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Quy định &amp; Chính sách</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Điều khoản sử dụng</a></li>
+                        <li><a href="#">Chính sách bảo mật</a></li>
+                        <li><a href="#">Quy định kiểm duyệt tin</a></li>
+                        <li><a href="#">Giải quyết tranh chấp</a></li>
+                        <li><a href="#">Bảo vệ quyền lợi sinh viên</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Liên hệ UniMarket</h4>
+                    <div class="contact-item">
+                        <span class="icon">📍</span>
+                        <span>Khu đô thị Đại học Quốc gia TP.HCM, TP. Thủ Đức</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="icon">📧</span>
+                        <span>hotro@unimarket.vn</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="icon">📞</span>
+                        <span>1800 6868 (Hỗ trợ sinh viên miễn phí)</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="icon">⏰</span>
+                        <span>7:30 – 21:30, Thứ 2 – Chủ nhật</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+                <span>© @DateTime.Now.Year UniMarket. Nền tảng trao đổi đồ cũ sinh viên. Bảo lưu mọi quyền.</span>
+                <div class="footer-bottom-links">
+                    <a href="#">Điều khoản</a>
+                    <a href="#">Bảo mật</a>
+                    <a href="#">Sitemap</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to top -->
+    <button class="scroll-top" id="scrollTopBtn"
+            onclick="window.scrollTo({top:0,behavior:'smooth'})"
+            aria-label="Lên đầu trang">
+        ↑
+    </button>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        function toggleMenu() {
+            var menu = document.getElementById('mobileMenu');
+            if (menu) menu.classList.toggle('open');
+        }
+
+        const scrollBtn = document.getElementById('scrollTopBtn');
+        if (scrollBtn) {
+            window.addEventListener('scroll', () => {
+                scrollBtn.classList.toggle('visible', window.scrollY > 300);
+            }, { passive: true });
+        }
+
+        // Cập nhật số lượng giỏ hàng
+        function updateCartBadge() {
+            fetch('/Cart/GetCount')
+                .then(r => r.json())
+                .then(data => {
+                    const badge = document.getElementById('headerCartCount');
+                    if (badge) badge.textContent = data.count;
+                })
+                .catch(() => {});
+        }
+
+        // Toggle yêu thích
+        function toggleFavorite(productId, btnElement, event) {
+            if (event) event.stopPropagation();
+            var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+            fetch('/Favorite/Toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': csrfToken
+                },
+                body: 'productId=' + productId + '&__RequestVerificationToken=' + encodeURIComponent(csrfToken)
+            })
+            .then(r => {
+                if (r.status === 401) {
+                    window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                    return null;
+                }
+                return r.json();
+            })
+            .then(data => {
+                if (!data) return;
+                if (data.success) {
+                    if (data.isFavorite) {
+                        btnElement.classList.add('active');
+                        btnElement.textContent = '❤️';
+                        btnElement.title = 'Đã yêu thích';
+                    } else {
+                        btnElement.classList.remove('active');
+                        btnElement.textContent = '🤍';
+                        btnElement.title = 'Yêu thích';
+                    }
+                } else if (data.message) {
+                    alert(data.message);
+                }
+            })
+            .catch(() => {});
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

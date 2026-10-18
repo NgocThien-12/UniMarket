@@ -1,0 +1,121 @@
+@model UniMarket.ViewModels.CheckoutViewModel
+@{
+    ViewData["Title"] = "Xác nhận đặt hàng";
+}
+
+<div class="container" style="padding: 40px 20px; max-width: 960px;">
+    <div style="margin-bottom:25px;">
+        <h1 style="font-size:24px; font-weight:800; color:#111827;">📦 Thông tin thanh toán &amp; Nhận hàng</h1>
+        <p style="color:#6b7280; font-size:14px; margin-top:4px;">Vui lòng kiểm tra lại địa chỉ và số điện thoại để người bán liên hệ giao đồ.</p>
+    </div>
+
+    <form asp-controller="Order" asp-action="Checkout" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom:20px; color:#dc2626; font-weight:600;"></div>
+
+        <div style="display:grid; grid-template-columns: 3fr 2fr; gap:30px; align-items:start;">
+            <!-- Cột trái: Form thông tin người nhận -->
+            <div style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:28px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                <h3 style="font-size:18px; font-weight:700; color:#111827; margin-bottom:20px; border-bottom:1px solid #e5e7eb; padding-bottom:10px;">
+                    👤 Thông tin người nhận
+                </h3>
+
+                <div class="form-group" style="margin-bottom:18px;">
+                    <label asp-for="RecipientName" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">
+                        Họ và tên người nhận <span style="color:red;">*</span>
+                    </label>
+                    <input asp-for="RecipientName" class="form-control" placeholder="Nguyễn Văn A" required />
+                    <span asp-validation-for="RecipientName" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+                </div>
+
+                <div class="form-group" style="margin-bottom:18px;">
+                    <label asp-for="PhoneNumber" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">
+                        Số điện thoại nhận hàng <span style="color:red;">*</span>
+                    </label>
+                    <input asp-for="PhoneNumber" type="tel" class="form-control" placeholder="0912 345 678" required />
+                    <span asp-validation-for="PhoneNumber" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+                </div>
+
+                <div class="form-group" style="margin-bottom:18px;">
+                    <label asp-for="DeliveryAddress" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">
+                        Địa chỉ nhận hàng / Điểm hẹn <span style="color:red;">*</span>
+                    </label>
+                    <textarea asp-for="DeliveryAddress" class="form-control" rows="2" placeholder="VD: Phòng 304, Tòa B2, Ký túc xá Khu B ĐHQG TP.HCM..." required></textarea>
+                    <span asp-validation-for="DeliveryAddress" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+                </div>
+
+                <div class="form-group" style="margin-bottom:18px;">
+                    <label asp-for="Notes" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">
+                        Ghi chú cho người bán (nếu có)
+                    </label>
+                    <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Thời gian bạn rảnh trong ngày, lưu ý giao nhận..."></textarea>
+                </div>
+
+                <div style="margin-top:20px; padding:15px; background:#f0fdf4; border-radius:8px; border:1px solid #bbf7d0;">
+                    <div style="font-weight:700; color:#166534; font-size:14px; margin-bottom:4px;">
+                        💵 Phương thức thanh toán: Tiền mặt khi nhận hàng (COD)
+                    </div>
+                    <div style="font-size:13px; color:#15803d;">
+                        Bạn sẽ thanh toán trực tiếp cho người bán sau khi gặp mặt và kiểm tra chất lượng sản phẩm.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột phải: Xem lại giỏ hàng & Tổng tiền -->
+            <div style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:24px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                <h3 style="font-size:18px; font-weight:700; color:#111827; margin-bottom:16px; border-bottom:1px solid #e5e7eb; padding-bottom:10px;">
+                    📋 Đơn hàng (@Model.Cart.TotalQuantity món)
+                </h3>
+
+                <div style="max-height:260px; overflow-y:auto; margin-bottom:16px;">
+                    @foreach (var item in Model.Cart.Items)
+                    {
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:13px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <img src="@item.ImageUrl" style="width:40px; height:40px; object-fit:cover; border-radius:6px;" alt="@item.ProductName" />
+                                <div>
+                                    <div style="font-weight:600; color:#111827; max-width:180px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">
+                                        @item.ProductName
+                                    </div>
+                                    <div style="color:#6b7280; font-size:12px;">Số lượng: x@item.Quantity</div>
+                                </div>
+                            </div>
+                            <div style="font-weight:700; color:#111827;">
+                                @item.Subtotal.ToString("N0") ₫
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div style="border-top:1px solid #e5e7eb; padding-top:14px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px; color:#4b5563;">
+                        <span>Tạm tính:</span>
+                        <span>@Model.Cart.TotalAmount.ToString("N0") ₫</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px; color:#4b5563;">
+                        <span>Phí giao dịch:</span>
+                        <span style="color:#16a34a; font-weight:600;">Miễn phí (0 ₫)</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:18px; font-weight:800; border-top:1px dashed #e5e7eb; padding-top:12px;">
+                        <span>Tổng tiền:</span>
+                        <span style="color:#dc2626;">@Model.Cart.TotalAmount.ToString("N0") ₫</span>
+                    </div>
+                </div>
+
+                <div style="margin-top:24px;">
+                    <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:16px; font-weight:700;">
+                        ✔ Xác nhận đặt hàng
+                    </button>
+                    <a asp-controller="Cart" asp-action="Index" class="btn btn-outline" style="width:100%; justify-content:center; margin-top:8px; font-size:13px;">
+                        ← Quay lại giỏ hàng
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

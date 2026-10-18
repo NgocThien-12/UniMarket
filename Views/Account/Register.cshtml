@@ -1,0 +1,67 @@
+@model UniMarket.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+}
+
+<main class="auth-main" style="min-height:75vh; display:flex; align-items:center; justify-content:center; padding:40px 15px;">
+    <div class="auth-card" style="background:#fff; border-radius:12px; padding:35px 30px; max-width:460px; width:100%; box-shadow:0 8px 30px rgba(0,0,0,0.08); border:1px solid #e5e7eb;">
+        <h1 class="auth-title" style="font-size:24px; font-weight:800; text-align:center; margin-bottom:8px;">Tạo tài khoản UniMarket</h1>
+        <p class="auth-desc" style="color:#6b7280; text-align:center; font-size:14px; margin-bottom:24px;">Tham gia cộng đồng mua bán sinh viên tiết kiệm và an toàn</p>
+
+        <form asp-controller="Account" asp-action="Register" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom:15px; color:#dc2626; font-size:13px; font-weight:500;"></div>
+
+            <div class="form-group" style="margin-bottom:16px;">
+                <label asp-for="FullName" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Họ và tên</label>
+                <input asp-for="FullName" class="form-control" placeholder="Nguyễn Văn A" required />
+                <span asp-validation-for="FullName" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+            </div>
+
+            <div class="form-group" style="margin-bottom:16px;">
+                <label asp-for="Email" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Email sinh viên hoặc cá nhân</label>
+                <input asp-for="Email" type="email" class="form-control" placeholder="vidu@student.edu.vn" required />
+                <span asp-validation-for="Email" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+            </div>
+
+            <div class="form-group" style="margin-bottom:16px;">
+                <label asp-for="PhoneNumber" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Số điện thoại (để người mua liên hệ)</label>
+                <input asp-for="PhoneNumber" type="tel" class="form-control" placeholder="0912 345 678" />
+                <span asp-validation-for="PhoneNumber" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+            </div>
+
+            <div class="form-group" style="margin-bottom:16px;">
+                <label asp-for="Password" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Mật khẩu</label>
+                <input asp-for="Password" class="form-control" placeholder="Ít nhất 6 ký tự" required />
+                <span asp-validation-for="Password" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+            </div>
+
+            <div class="form-group" style="margin-bottom:16px;">
+                <label asp-for="ConfirmPassword" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Xác nhận mật khẩu</label>
+                <input asp-for="ConfirmPassword" class="form-control" placeholder="Nhập lại mật khẩu" required />
+                <span asp-validation-for="ConfirmPassword" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+            </div>
+
+            <div class="form-options" style="margin-bottom:20px; font-size:13px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input asp-for="AgreeTerms" type="checkbox" required style="width:16px; height:16px; accent-color:var(--primary);" />
+                    <span>Tôi đồng ý với Quy chế hoạt động của UniMarket</span>
+                </label>
+                <span asp-validation-for="AgreeTerms" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:15px; font-weight:700;">
+                Tạo tài khoản
+            </button>
+        </form>
+
+        <div class="auth-footer" style="text-align:center; margin-top:20px; font-size:14px; color:#6b7280;">
+            Đã có tài khoản? <a asp-controller="Account" asp-action="Login" style="color:var(--primary); font-weight:600;">Đăng nhập</a>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

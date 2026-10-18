@@ -1,0 +1,54 @@
+@model UniMarket.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+}
+
+<div class="container" style="padding: 40px 20px; max-width: 800px;">
+    <div style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:30px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e5e7eb; padding-bottom:15px; margin-bottom:25px;">
+            <h1 style="font-size:22px; font-weight:800; color:#111827;">👤 Hồ sơ cá nhân</h1>
+            <a asp-controller="Account" asp-action="ChangePassword" class="btn btn-outline" style="font-size:13px;">
+                🔑 Đổi mật khẩu
+            </a>
+        </div>
+
+        <form asp-controller="Account" asp-action="Profile" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom:15px; color:#dc2626;"></div>
+
+            <div class="form-group" style="margin-bottom:18px;">
+                <label asp-for="Email" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Email (Tài khoản đăng nhập)</label>
+                <input asp-for="Email" class="form-control" readonly style="background:#f9fafb; cursor:not-allowed;" />
+            </div>
+
+            <div class="form-group" style="margin-bottom:18px;">
+                <label asp-for="FullName" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Họ và tên</label>
+                <input asp-for="FullName" class="form-control" required />
+                <span asp-validation-for="FullName" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+            </div>
+
+            <div class="form-group" style="margin-bottom:18px;">
+                <label asp-for="PhoneNumber" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Số điện thoại liên hệ</label>
+                <input asp-for="PhoneNumber" class="form-control" placeholder="0912 345 678" />
+                <span asp-validation-for="PhoneNumber" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+            </div>
+
+            <div class="form-group" style="margin-bottom:18px;">
+                <label asp-for="Address" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Địa chỉ thường trú / Phòng Ký túc xá</label>
+                <input asp-for="Address" class="form-control" placeholder="Khu B, ĐHQG TP.HCM, Thủ Đức..." />
+                <span asp-validation-for="Address" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+            </div>
+
+            <div style="margin-top:25px; display:flex; justify-content:flex-end;">
+                <button type="submit" class="btn btn-primary" style="padding:10px 24px; font-weight:700;">
+                    💾 Lưu thay đổi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

@@ -1,0 +1,169 @@
+@model UniMarket.ViewModels.AdminProductListViewModel
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+}
+
+<div style="background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:20px; margin-bottom:24px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+    <form asp-area="Admin" asp-controller="Product" asp-action="IndexSpAdmin" method="get" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <div style="flex:2; min-width:200px;">
+            <input type="text" name="Keyword" value="@Model.Keyword" class="form-control" placeholder="Tìm theo tên sản phẩm, người bán..." />
+        </div>
+
+        <div style="flex:1; min-width:160px;">
+            <select name="Status" class="form-control" onchange="this.form.submit()">
+                <option value="">-- Tất cả trạng thái --</option>
+                <option value="0" selected="@(Model.Status == ProductStatus.Pending)">⏳ Chờ phê duyệt</option>
+                <option value="1" selected="@(Model.Status == ProductStatus.Approved)">✅ Đã duyệt (Đang bán)</option>
+                <option value="2" selected="@(Model.Status == ProductStatus.Rejected)">❌ Bị từ chối</option>
+                <option value="4" selected="@(Model.Status == ProductStatus.Sold)">🏷️ Đã bán</option>
+                <option value="3" selected="@(Model.Status == ProductStatus.Inactive)">Ẩn / Khóa</option>
+            </select>
+        </div>
+
+        <div style="flex:1; min-width:160px;">
+            <select name="CategoryId" class="form-control" onchange="this.form.submit()">
+                <option value="0">-- Tất cả danh mục --</option>
+                @foreach (var c in Model.Categories)
+                {
+                    <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
+                }
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="padding:9px 18px;">🔍 Lọc</button>
+        <a asp-area="Admin" asp-controller="Product" asp-action="IndexSpAdmin" class="btn btn-outline" style="padding:9px 18px;">✕ Đặt lại</a>
+    </form>
+</div>
+
+<div style="background:#fff; border-radius:10px; border:1px solid #e5e7eb; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+    <div style="padding:16px 20px; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-weight:700; color:#111827;">Danh sách tin đăng (@Model.TotalItems sản phẩm)</div>
+    </div>
+
+    <div class="table-responsive">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+            <thead>
+                <tr style="background:#f9fafb; border-bottom:1px solid #e5e7eb; color:#4b5563;">
+                    <th style="padding:12px 16px;">Sản phẩm</th>
+                    <th style="padding:12px 16px;">Danh mục</th>
+                    <th style="padding:12px 16px;">Giá bán</th>
+                    <th style="padding:12px 16px;">Người đăng</th>
+                    <th style="padding:12px 16px;">Ngày tạo</th>
+                    <th style="padding:12px 16px;">Trạng thái</th>
+                    <th style="padding:12px 16px; text-align:right;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Products.Any())
+                {
+                    @foreach (var p in Model.Products)
+                    {
+                        var mainImg = p.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl
+                                      ?? p.Images.FirstOrDefault()?.ImageUrl
+                                      ?? "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=480&h=360&fit=crop&auto=format";
+
+                        var badge = p.Status switch
+                        {
+                            ProductStatus.Pending => "<span class='badge-status' style='background:#fef3c7; color:#92400e;'>⏳ Chờ duyệt</span>",
+                            ProductStatus.Approved => "<span class='badge-status' style='background:#dcfce7; color:#166534;'>✅ Đã duyệt</span>",
+                            ProductStatus.Rejected => "<span class='badge-status' style='background:#fee2e2; color:#991b1b;'>❌ Bị từ chối</span>",
+                            ProductStatus.Sold => "<span class='badge-status' style='background:#e0e7ff; color:#3730a3;'>🏷️ Đã bán</span>",
+                            _ => "<span class='badge-status' style='background:#f3f4f6; color:#4b5563;'>Ẩn</span>"
+                        };
+
+                        <tr style="border-bottom:1px solid #f3f4f6;">
+                            <td style="padding:12px 16px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="@mainImg" style="width:45px; height:45px; object-fit:cover; border-radius:6px;" alt="@p.Name" />
+                                    <div>
+                                        <div style="font-weight:600; color:#111827; max-width:240px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">
+                                            @p.Name
+                                        </div>
+                                        <div style="font-size:11px; color:#6b7280;">ID: #@p.Id • SL: @p.AvailableQuantity</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="padding:12px 16px; color:#4b5563;">@(p.Category?.Name ?? "—")</td>
+                            <td style="padding:12px 16px; font-weight:700; color:#dc2626;">@p.Price.ToString("N0") ₫</td>
+                            <td style="padding:12px 16px; color:#374151;">
+                                <div style="font-weight:600;">@(p.Seller?.FullName ?? "—")</div>
+                                <div style="font-size:11px; color:#6b7280;">@(p.Seller?.Email ?? "")</div>
+                            </td>
+                            <td style="padding:12px 16px; color:#6b7280;">@p.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td style="padding:12px 16px;">@Html.Raw(badge)</td>
+                            <td style="padding:12px 16px; text-align:right;">
+                                <div style="display:inline-flex; gap:6px;">
+                                    <a asp-area="" asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@p.Id" target="_blank" class="btn btn-outline" style="padding:4px 8px; font-size:12px;" title="Xem trên web">
+                                        👁️
+                                    </a>
+
+                                    @if (p.Status == ProductStatus.Pending)
+                                    {
+                                        <form asp-area="Admin" asp-controller="Product" asp-action="Approve" asp-route-id="@p.Id" method="post" style="margin:0;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px; background:#16a34a; border-color:#16a34a;" title="Phê duyệt">
+                                                ✔ Duyệt
+                                            </button>
+                                        </form>
+
+                                        <form asp-area="Admin" asp-controller="Product" asp-action="Reject" asp-route-id="@p.Id" method="post" style="margin:0;" onsubmit="return confirmReject(this);">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="reason" value="" />
+                                            <button type="submit" class="btn btn-outline" style="padding:4px 10px; font-size:12px; color:#dc2626; border-color:#fca5a5;" title="Từ chối">
+                                                ✕ Từ chối
+                                            </button>
+                                        </form>
+                                    }
+
+                                    @if (p.Status == ProductStatus.Approved)
+                                    {
+                                        <form asp-area="Admin" asp-controller="Product" asp-action="Delete" asp-route-id="@p.Id" method="post" style="margin:0;" onsubmit="return confirm('Bạn có chắc muốn ẩn sản phẩm này khỏi sàn?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline" style="padding:4px 8px; font-size:12px; color:#dc2626; border-color:#fca5a5;" title="Ẩn sản phẩm">
+                                                Ẩn
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" style="padding:40px; text-align:center; color:#6b7280;">
+                            Không tìm thấy sản phẩm nào phù hợp với bộ lọc.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div style="padding:16px 20px; display:flex; justify-content:center; gap:6px;">
+            @for (int p = 1; p <= Model.TotalPages; p++)
+            {
+                <a asp-area="Admin" asp-controller="Product" asp-action="IndexSpAdmin" 
+                   asp-route-Page="@p" asp-route-Keyword="@Model.Keyword" asp-route-Status="@Model.Status" asp-route-CategoryId="@Model.CategoryId"
+                   class="btn @(p == Model.Page ? "btn-primary" : "btn-outline")" style="padding:5px 12px; font-size:13px;">
+                    @p
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function confirmReject(form) {
+            const reason = prompt("Nhập lý do từ chối tin đăng:", "Hình ảnh không rõ ràng hoặc vi phạm quy định.");
+            if (reason === null) return false;
+            form.querySelector('input[name="reason"]').value = reason;
+            return true;
+        }
+    </script>
+}
+

@@ -1,0 +1,128 @@
+@model UniMarket.ViewModels.CartViewModel
+@{
+    ViewData["Title"] = "Giỏ hàng của bạn";
+}
+
+<div class="container" style="padding: 40px 20px;">
+    <div style="margin-bottom:25px;">
+        <h1 style="font-size:24px; font-weight:800; color:#111827;">🛒 Giỏ hàng của bạn</h1>
+        <p style="color:#6b7280; font-size:14px; margin-top:4px;">Kiểm tra danh sách các món đồ bạn dự định mua trước khi thanh toán.</p>
+    </div>
+
+    @if (Model.Items.Any())
+    {
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:30px; align-items:start;">
+            <!-- Cột trái: Danh sách sản phẩm -->
+            <div style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                <table style="width:100%; border-collapse:collapse; text-align:left;">
+                    <thead>
+                        <tr style="background:#f9fafb; border-bottom:1px solid #e5e7eb; font-size:13px; color:#4b5563;">
+                            <th style="padding:14px 16px;">Sản phẩm</th>
+                            <th style="padding:14px 16px;">Đơn giá</th>
+                            <th style="padding:14px 16px; text-align:center;">Số lượng</th>
+                            <th style="padding:14px 16px;">Thành tiền</th>
+                            <th style="padding:14px 16px; text-align:center;">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr style="border-bottom:1px solid #f3f4f6; font-size:14px;">
+                                <td style="padding:14px 16px;">
+                                    <div style="display:flex; align-items:center; gap:12px;">
+                                        <img src="@item.ImageUrl" alt="@item.ProductName" style="width:60px; height:60px; object-fit:cover; border-radius:8px;" />
+                                        <div>
+                                            <a asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@item.ProductId" style="font-weight:600; color:#111827; text-decoration:none;">
+                                                @item.ProductName
+                                            </a>
+                                            <div style="font-size:12px; color:#6b7280; margin-top:3px;">
+                                                Người bán: @item.SellerName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding:14px 16px; font-weight:600; color:#111827;">
+                                    @item.UnitPrice.ToString("N0") ₫
+                                </td>
+                                <td style="padding:14px 16px; text-align:center;">
+                                    <form asp-controller="Cart" asp-action="UpdateQuantity" method="post" style="display:inline-flex; align-items:center; gap:4px;">
+                                        <input type="hidden" name="productId" value="@item.ProductId" />
+                                        <input type="number" name="quantity" value="@item.Quantity" min="1" max="@item.MaxQuantity" 
+                                               style="width:55px; text-align:center; padding:5px; border:1px solid #d1d5db; border-radius:6px;" 
+                                               onchange="this.form.submit()" />
+                                    </form>
+                                </td>
+                                <td style="padding:14px 16px; font-weight:700; color:#dc2626;">
+                                    @item.Subtotal.ToString("N0") ₫
+                                </td>
+                                <td style="padding:14px 16px; text-align:center;">
+                                    <form asp-controller="Cart" asp-action="RemoveItem" method="post">
+                                        <input type="hidden" name="productId" value="@item.ProductId" />
+                                        <button type="submit" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:16px;" title="Xóa món này">
+                                            🗑️
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div style="padding:15px 20px; display:flex; justify-content:space-between; align-items:center; background:#fafafa;">
+                    <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-outline" style="font-size:13px;">
+                        ← Tiếp tục chọn đồ
+                    </a>
+                    <form asp-controller="Cart" asp-action="ClearCart" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn làm trống giỏ hàng?');">
+                        <button type="submit" class="btn btn-outline" style="font-size:13px; color:#dc2626; border-color:#fca5a5;">
+                            Xóa toàn bộ giỏ hàng
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Cột phải: Tóm tắt đơn hàng -->
+            <div style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:24px; box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                <h3 style="font-size:18px; font-weight:800; color:#111827; margin-bottom:16px; border-bottom:1px solid #e5e7eb; padding-bottom:12px;">
+                    Tóm tắt đơn hàng
+                </h3>
+
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px; color:#4b5563;">
+                    <span>Tổng số lượng:</span>
+                    <strong style="color:#111827;">@Model.TotalQuantity sản phẩm</strong>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px; color:#4b5563;">
+                    <span>Giao nhận:</span>
+                    <span style="color:#16a34a; font-weight:600;">Hẹn gặp trực tiếp</span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; margin-top:16px; padding-top:16px; border-top:1px solid #e5e7eb; font-size:18px; font-weight:800;">
+                    <span>Tổng thanh toán:</span>
+                    <span style="color:#dc2626;">@Model.TotalAmount.ToString("N0") ₫</span>
+                </div>
+
+                <div style="margin-top:24px;">
+                    <a asp-controller="Order" asp-action="Checkout" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:16px; font-weight:700;">
+                        Tiến hành đặt hàng →
+                    </a>
+                </div>
+
+                <div style="margin-top:16px; font-size:12px; color:#6b7280; text-align:center;">
+                    🛡️ Kiểm tra hàng tận tay tại trường trước khi thanh toán tiền mặt.
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:60px 20px; text-align:center;">
+            <div style="font-size:54px; margin-bottom:12px;">🛒</div>
+            <h3 style="font-size:20px; font-weight:700; margin-bottom:8px;">Giỏ hàng của bạn đang trống</h3>
+            <p style="color:#6b7280; font-size:14px; margin-bottom:24px;">Hãy dạo qua các món đồ hữu ích với giá sinh viên trên UniMarket nhé!</p>
+            <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-primary" style="padding:11px 26px; font-size:15px; font-weight:700;">
+                🛍️ Khám phá sản phẩm ngay
+            </a>
+        </div>
+    }
+</div>
+

@@ -1,0 +1,74 @@
+@model List<UniMarket.Models.Favorite>
+@{
+    ViewData["Title"] = "Sản phẩm yêu thích";
+}
+
+<div class="container" style="padding: 40px 20px;">
+    <div style="margin-bottom:25px;">
+        <h1 style="font-size:24px; font-weight:800; color:#111827;">❤️ Danh sách sản phẩm yêu thích</h1>
+        <p style="color:#6b7280; font-size:14px; margin-top:4px;">Lưu lại những món đồ hữu ích để theo dõi giá và mua sau.</p>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="product-grid">
+            @foreach (var fav in Model)
+            {
+                var item = fav.Product;
+                if (item != null)
+                {
+                    var mainImg = item.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl 
+                                  ?? item.Images.FirstOrDefault()?.ImageUrl 
+                                  ?? "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=480&h=360&fit=crop&auto=format";
+
+                    <article class="product-card" style="cursor:pointer;" onclick="location.href='@Url.Action("IndexCT", "CTMatHang", new { id = item.Id })'">
+                        <div class="product-img-wrap">
+                            <a asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@item.Id">
+                                <img src="@mainImg" alt="@item.Name" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=480&h=360&fit=crop&auto=format'" />
+                            </a>
+                            <button type="button" class="fav-btn active" onclick="toggleFavorite(@item.Id, this, event)" title="Bỏ yêu thích">
+                                ❤️
+                            </button>
+                            <span class="condition-badge badge-good">Yêu thích</span>
+                        </div>
+
+                        <div class="product-body">
+                            <a asp-controller="CTMatHang" asp-action="IndexCT" asp-route-id="@item.Id" class="product-name">
+                                @item.Name
+                            </a>
+
+                            <div class="product-price">@item.Price.ToString("N0") ₫</div>
+
+                            <div class="product-meta">
+                                <span>📍 @(item.Location ?? "TP.HCM")</span>
+                                <span>🕐 @item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</span>
+                            </div>
+
+                            <div style="margin-top:10px; display:flex; gap:8px;">
+                                <form asp-controller="Cart" asp-action="AddToCart" method="post" style="flex:1;" onclick="event.stopPropagation();">
+                                    <input type="hidden" name="productId" value="@item.Id" />
+                                    <input type="hidden" name="quantity" value="1" />
+                                    <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:6px 12px; font-size:13px;">
+                                        🛒 Cho vào giỏ
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </article>
+                }
+            }
+        </div>
+    }
+    else
+    {
+        <div style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:60px 20px; text-align:center;">
+            <div style="font-size:54px; margin-bottom:12px;">🤍</div>
+            <h3 style="font-size:18px; font-weight:700; margin-bottom:8px;">Chưa có sản phẩm nào trong danh sách yêu thích</h3>
+            <p style="color:#6b7280; font-size:14px; margin-bottom:20px;">Khi xem sản phẩm, hãy bấm nút trái tim để lưu lại nhé!</p>
+            <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-primary">
+                🛍️ Khám phá sản phẩm
+            </a>
+        </div>
+    }
+</div>
+

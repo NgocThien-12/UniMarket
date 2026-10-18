@@ -1,0 +1,262 @@
+@model UniMarket.ViewModels.ProductCreateViewModel
+@{
+    ViewData["Title"] = "Đăng bán sản phẩm";
+}
+
+<!-- ============================================================
+     BREADCRUMB
+============================================================ -->
+<nav class="db-breadcrumb" aria-label="Đường dẫn trang">
+    <div class="container">
+        <ol class="db-breadcrumb-list">
+            <li><a asp-controller="Home" asp-action="Index">🏠 Trang chủ</a></li>
+            <li class="sp-sep">›</li>
+            <li class="db-current">Đăng bán sản phẩm</li>
+        </ol>
+    </div>
+</nav>
+
+<!-- ============================================================
+     PAGE HERO
+============================================================ -->
+<section class="db-hero">
+    <div class="container">
+        <div class="db-hero-inner">
+            <div class="db-hero-icon">🏷️</div>
+            <div>
+                <h1 class="db-hero-title">Đăng bán sản phẩm đồ cũ</h1>
+                <p class="db-hero-desc">
+                    Điền đầy đủ thông tin để tin đăng được phê duyệt nhanh chóng và tiếp cận nhiều bạn sinh viên hơn.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     MAIN CONTENT
+============================================================ -->
+<main class="db-main">
+    <div class="container">
+        <form asp-controller="DangBan" asp-action="IndexDB" method="post" enctype="multipart/form-data" id="sellForm">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger" style="margin-bottom:15px; font-weight:600; color:#dc2626;"></div>
+
+            <div class="db-layout">
+                <!-- =====================================================
+                     LEFT – FORM NHẬP LIỆU
+                ====================================================== -->
+                <div class="db-form-area">
+                    <!-- 1. Thông tin cơ bản -->
+                    <div class="db-card">
+                        <div class="db-card-title">
+                            <span class="icon">📋</span> Thông tin sản phẩm
+                        </div>
+
+                        <!-- Tiêu đề -->
+                        <div class="form-group" style="margin-bottom:15px;">
+                            <label class="form-label" asp-for="Name">
+                                Tiêu đề tin đăng <span class="required" style="color:red;">*</span>
+                            </label>
+                            <input asp-for="Name" class="form-control" id="productTitle"
+                                   placeholder="VD: Laptop Dell Inspiron 15 – Core i5, 8GB RAM, SSD 256GB"
+                                   maxlength="150" oninput="updatePreviewTitle(this.value)" required />
+                            <span asp-validation-for="Name" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+                        </div>
+
+                        <!-- Danh mục & Số lượng -->
+                        <div class="form-row" style="display:flex; gap:15px; margin-bottom:15px;">
+                            <div class="form-group" style="flex:2;">
+                                <label class="form-label" asp-for="CategoryId">
+                                    Danh mục sản phẩm <span class="required" style="color:red;">*</span>
+                                </label>
+                                <select asp-for="CategoryId" class="form-control" required>
+                                    <option value="" disabled selected>-- Chọn danh mục --</option>
+                                    @if (Model.Categories != null)
+                                    {
+                                        foreach (var cat in Model.Categories)
+                                        {
+                                            <option value="@cat.Id">@(cat.Icon ?? "📦") @cat.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="CategoryId" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+                            </div>
+
+                            <div class="form-group" style="flex:1;">
+                                <label class="form-label" asp-for="AvailableQuantity">Số lượng có sẵn</label>
+                                <input asp-for="AvailableQuantity" type="number" min="1" max="100" class="form-control" />
+                                <span asp-validation-for="AvailableQuantity" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+                            </div>
+                        </div>
+
+                        <!-- Tình trạng -->
+                        <div class="form-group" style="margin-bottom:15px;">
+                            <label class="form-label" asp-for="Condition">Tình trạng món đồ</label>
+                            <select asp-for="Condition" class="form-control" id="productCondition" onchange="updatePreviewCondition(this.value)">
+                                <option value="0">Mới 100% (Chưa qua sử dụng)</option>
+                                <option value="1">Mới 99% (Còn rất tốt, như mới)</option>
+                                <option value="2" selected>Còn tốt (Đã dùng, hoạt động hoàn hảo)</option>
+                                <option value="3">Đã qua sử dụng (Có trầy xước nhẹ)</option>
+                            </select>
+                        </div>
+
+                        <!-- Giá bán -->
+                        <div class="form-group" style="margin-bottom:15px;">
+                            <label class="form-label" asp-for="Price">
+                                Giá bán (VNĐ) <span class="required" style="color:red;">*</span>
+                            </label>
+                            <div class="price-wrap">
+                                <input asp-for="Price" type="number" min="0" step="1000" class="form-control" id="productPrice"
+                                       placeholder="0" oninput="updatePreviewPrice(this.value)" required />
+                                <span class="price-unit">₫</span>
+                            </div>
+                            <span asp-validation-for="Price" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+                            <div class="form-help" style="font-size:12px; color:#6b7280; margin-top:4px;">
+                                Đặt mức giá phù hợp với túi tiền sinh viên để bán nhanh hơn.
+                            </div>
+                        </div>
+
+                        <!-- Địa điểm -->
+                        <div class="form-group" style="margin-bottom:15px;">
+                            <label class="form-label" asp-for="Location">
+                                Địa điểm giao dịch / Khu vực <span class="required" style="color:red;">*</span>
+                            </label>
+                            <input asp-for="Location" class="form-control" id="productLocation"
+                                   placeholder="VD: Ký túc xá khu B, ĐHQG TP.HCM, P. Linh Trung, Thủ Đức..."
+                                   oninput="updatePreviewLoc(this.value)" required />
+                            <span asp-validation-for="Location" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+                        </div>
+
+                        <!-- Mô tả -->
+                        <div class="form-group" style="margin-bottom:15px;">
+                            <label class="form-label" asp-for="Description">
+                                Mô tả chi tiết <span class="required" style="color:red;">*</span>
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="5"
+                                      placeholder="Mô tả cụ thể cấu hình, tình trạng hao mòn, phụ kiện đi kèm, lý do bán..." required></textarea>
+                            <span asp-validation-for="Description" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Tải ảnh lên -->
+                    <div class="db-card" style="margin-top:20px;">
+                        <div class="db-card-title">
+                            <span class="icon">📷</span> Hình ảnh sản phẩm (Tối đa 5 ảnh, dưới 5MB)
+                        </div>
+
+                        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()" style="cursor:pointer; border:2px dashed #d1d5db; border-radius:8px; padding:30px; text-align:center;">
+                            <input type="file" asp-for="Images" id="fileInput" accept="image/*" multiple style="display:none;" onchange="previewFiles(this.files)" />
+                            <div style="font-size:36px; margin-bottom:8px;">📸</div>
+                            <div class="upload-title" style="font-weight:600; color:#1f2937;">
+                                Nhấn vào đây để tải ảnh từ máy tính hoặc điện thoại
+                            </div>
+                            <div class="upload-sub" style="font-size:13px; color:#6b7280; margin-top:4px;">
+                                Hỗ trợ file: JPG, PNG, WEBP (Tối đa 5MB/ảnh)
+                            </div>
+                        </div>
+
+                        <div id="previewGrid" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:15px;"></div>
+                    </div>
+                </div>
+
+                <!-- =====================================================
+                     RIGHT – PREVIEW & SUBMIT
+                ====================================================== -->
+                <aside class="db-sidebar">
+                    <!-- Live preview -->
+                    <div class="db-preview-card">
+                        <div class="db-preview-header">Xem trước thẻ sản phẩm</div>
+                        <div class="db-preview-img" id="previewImg" style="background:#f3f4f6; min-height:160px; display:flex; align-items:center; justify-content:center; font-size:32px;">
+                            🖼️
+                        </div>
+                        <div class="db-preview-body">
+                            <div class="db-preview-name" id="previewName" style="font-weight:600; margin-bottom:6px;">
+                                Tiêu đề sản phẩm sẽ hiển thị ở đây
+                            </div>
+                            <div class="db-preview-price" id="previewPrice" style="color:#dc2626; font-weight:700; font-size:18px;">— ₫</div>
+                            <div id="previewCondBadge" style="margin:6px 0;">
+                                <span class="condition-badge badge-good">Còn tốt</span>
+                            </div>
+                            <div class="db-preview-meta" style="font-size:12px; color:#6b7280;">
+                                <span id="previewLoc">📍 Địa điểm giao dịch</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mẹo đăng bán -->
+                    <div class="db-tips-card" style="margin-top:20px;">
+                        <div class="db-tips-title">💡 Mẹo bán nhanh</div>
+                        <div class="db-tip-item">
+                            <span>✔ Chụp ảnh rõ ràng, đủ sáng và chân thực.</span>
+                        </div>
+                        <div class="db-tip-item">
+                            <span>✔ Định giá hợp lý dựa trên độ mới của đồ.</span>
+                        </div>
+                        <div class="db-tip-item">
+                            <span>✔ Nêu rõ điểm hẹn gặp trong khuôn viên trường.</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px;">
+                        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:16px; font-weight:700;">
+                            🚀 Đăng bán sản phẩm
+                        </button>
+                    </div>
+                </aside>
+            </div>
+        </form>
+    </div>
+</main>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function updatePreviewTitle(val) {
+            document.getElementById("previewName").textContent = val.trim() || "Tiêu đề sản phẩm sẽ hiển thị ở đây";
+        }
+
+        function updatePreviewPrice(val) {
+            const num = parseInt(val, 10);
+            if (!val || isNaN(num)) {
+                document.getElementById("previewPrice").textContent = "— ₫";
+            } else {
+                document.getElementById("previewPrice").textContent = num.toLocaleString("vi-VN") + " ₫";
+            }
+        }
+
+        function updatePreviewLoc(val) {
+            document.getElementById("previewLoc").textContent = "📍 " + (val.trim() || "Địa điểm giao dịch");
+        }
+
+        function previewFiles(files) {
+            const grid = document.getElementById("previewGrid");
+            grid.innerHTML = "";
+            if (!files || files.length === 0) return;
+
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.style.width = "70px";
+                    img.style.height = "70px";
+                    img.style.objectFit = "cover";
+                    img.style.borderRadius = "6px";
+                    img.style.border = "1px solid #e5e7eb";
+                    grid.appendChild(img);
+
+                    if (index === 0) {
+                        const previewCover = document.getElementById("previewImg");
+                        previewCover.style.backgroundImage = `url('${e.target.result}')`;
+                        previewCover.style.backgroundSize = "cover";
+                        previewCover.style.backgroundPosition = "center";
+                        previewCover.textContent = "";
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    </script>
+}
+

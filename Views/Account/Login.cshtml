@@ -1,0 +1,55 @@
+@model UniMarket.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<main class="auth-main" style="min-height:75vh; display:flex; align-items:center; justify-content:center; padding:40px 15px;">
+    <div class="auth-card" style="background:#fff; border-radius:12px; padding:35px 30px; max-width:440px; width:100%; box-shadow:0 8px 30px rgba(0,0,0,0.08); border:1px solid #e5e7eb;">
+        <h1 class="auth-title" style="font-size:24px; font-weight:800; text-align:center; margin-bottom:8px;">Chào mừng trở lại!</h1>
+        <p class="auth-desc" style="color:#6b7280; text-align:center; font-size:14px; margin-bottom:24px;">Đăng nhập để tiếp tục mua bán trên UniMarket</p>
+
+        <form asp-controller="Account" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom:15px; color:#dc2626; font-size:13px; font-weight:500;"></div>
+
+            <div class="form-group" style="margin-bottom:16px;">
+                <label asp-for="Email" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Email hoặc Tên đăng nhập</label>
+                <input asp-for="Email" class="form-control" placeholder="vidu@student.edu.vn" required />
+                <span asp-validation-for="Email" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+            </div>
+
+            <div class="form-group" style="margin-bottom:16px;">
+                <label asp-for="Password" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Mật khẩu</label>
+                <input asp-for="Password" class="form-control" placeholder="••••••••" required />
+                <span asp-validation-for="Password" class="text-danger" style="color:#dc2626; font-size:12px;"></span>
+            </div>
+
+            <div class="form-options" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; font-size:13px;">
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input asp-for="RememberMe" type="checkbox" style="width:16px; height:16px; accent-color:var(--primary);" />
+                    <span>Ghi nhớ đăng nhập</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:15px; font-weight:700;">
+                Đăng nhập
+            </button>
+        </form>
+
+        <div class="auth-footer" style="text-align:center; margin-top:20px; font-size:14px; color:#6b7280;">
+            Chưa có tài khoản? <a asp-controller="Account" asp-action="Register" style="color:var(--primary); font-weight:600;">Đăng ký ngay</a>
+        </div>
+
+        <div style="margin-top:20px; padding:12px; background:#f9fafb; border-radius:8px; font-size:12px; color:#4b5563; line-height:1.6;">
+            <strong>💡 Tài khoản mẫu thử nghiệm:</strong><br/>
+            • Admin: <code>admin@unimarket.vn</code> / <code>Admin@123456</code><br/>
+            • Sinh viên: <code>nguyen.van.a@example.com</code> / <code>Student@123456</code><br/>
+            • Sinh viên: <code>tran.thi.b@example.com</code> / <code>Student@123456</code>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
