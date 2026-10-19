@@ -86,6 +86,53 @@ namespace UniMarket.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(IndexNguoiDungAdmin));
         }
+
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            // Không cho phép xóa tài khoản đang đăng nhập
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                TempData["ErrorMessage"] = "Tài khoản không hợp lệ.";
+                return RedirectToAction(nameof(IndexNguoiDungAdmin));
+            }
+
+            if (id == currentUserId)
+            {
+                TempData["ErrorMessage"] =
+                    "Bạn không thể xóa tài khoản quản trị đang đăng nhập.";
+                return RedirectToAction(nameof(IndexNguoiDungAdmin));
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần xóa.";
+                return RedirectToAction(nameof(IndexNguoiDungAdmin));
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] =
+                    $"Đã xóa tài khoản {user.Email} thành công.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = string.Join(
+                    " ",
+                    result.Errors.Select(e => e.Description));
+            }
+
+            return RedirectToAction(nameof(IndexNguoiDungAdmin));
+        }
+
     }
 }
 
