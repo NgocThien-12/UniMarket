@@ -17,16 +17,18 @@ namespace UniMarket.Areas.Admin.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Index()
-        {
-            var categories = await _context.Categories
-                .Include(c => c.Products)
-                .OrderBy(c => c.SortOrder)
-                .ToListAsync();
+       
+                [HttpGet]
+                public async Task<IActionResult> Index()
+                {
+                    var categories = await _context.Categories
+                        .Include(c => c.Products)
+                        .OrderBy(c => c.Id)
+                        .ToListAsync();
 
-            return View(categories);
-        }
+                    return View(categories);
+                }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
