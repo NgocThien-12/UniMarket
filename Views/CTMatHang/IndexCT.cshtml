@@ -98,7 +98,7 @@
                 else if (!Model.Product.IsAvailable || Model.Product.AvailableQuantity < 1)
                 {
                     <div style="background:#fee2e2; border:1px solid #fecaca; color:#991b1b; padding:12px; border-radius:8px; margin-top:15px; font-weight:600;">
-                        ❌ Sản phẩm này đã bán hoặc hiện không còn khả dụng.
+                         Sản phẩm này đã bán hoặc hiện không còn khả dụng.
                     </div>
                 }
                 else
@@ -124,7 +124,7 @@
                             <input type="hidden" name="quantity" value="1" />
                             <input type="hidden" name="returnUrl" value="/Order/Checkout" />
                             <button type="submit" class="btn btn-accent" style="width:100%; justify-content:center; padding:12px; font-size:15px; background:var(--accent); color:white;">
-                                ⚡ Mua ngay
+                                 Mua ngay
                             </button>
                         </form>
                     </div>
@@ -168,7 +168,7 @@
                 <div class="section-header">
                     <h2 class="section-title">Sản phẩm <span>cùng danh mục</span></h2>
                     <a asp-controller="MatHang" asp-action="IndexMH" asp-route-CategoryId="@Model.Product.CategoryId" class="btn btn-outline" style="padding:7px 16px; font-size:13px;">
-                        Xem thêm →
+                        Xem thêm 
                     </a>
                 </div>
                 <div class="product-grid">
@@ -194,8 +194,8 @@
                                 </div>
                                 <div class="product-price">@rel.Price.ToString("N0") ₫</div>
                                 <div class="product-meta">
-                                    <span>📍 @(rel.Location ?? "TP.HCM")</span>
-                                    <span>🕐 @rel.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</span>
+                                    <span> @(rel.Location ?? "TP.HCM")</span>
+                                    <span> @rel.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</span>
                                 </div>
                             </div>
                         </article>

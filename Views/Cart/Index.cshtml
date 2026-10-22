@@ -59,7 +59,7 @@
                                     <form asp-controller="Cart" asp-action="RemoveItem" method="post">
                                         <input type="hidden" name="productId" value="@item.ProductId" />
                                         <button type="submit" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:16px;" title="Xóa món này">
-                                            🗑️
+                                            Xóa
                                         </button>
                                     </form>
                                 </td>
@@ -70,7 +70,7 @@
 
                 <div style="padding:15px 20px; display:flex; justify-content:space-between; align-items:center; background:#fafafa;">
                     <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-outline" style="font-size:13px;">
-                        ← Tiếp tục chọn đồ
+                         Tiếp tục chọn đồ
                     </a>
                     <form asp-controller="Cart" asp-action="ClearCart" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn làm trống giỏ hàng?');">
                         <button type="submit" class="btn btn-outline" style="font-size:13px; color:#dc2626; border-color:#fca5a5;">
@@ -103,7 +103,7 @@
 
                 <div style="margin-top:24px;">
                     <a asp-controller="Order" asp-action="Checkout" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:16px; font-weight:700;">
-                        Tiến hành đặt hàng →
+                        Tiến hành đặt hàng 
                     </a>
                 </div>
 

@@ -185,14 +185,14 @@
                                     </div>
                                     <div class="product-price">@item.Price.ToString("N0") ₫</div>
                                     <div class="product-meta">
-                                        <span>📍 @(item.Location ?? "TP.HCM")</span>
-                                        <span>🕐 @item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</span>
+                                        <span> @(item.Location ?? "TP.HCM")</span>
+                                        <span> @item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</span>
                                     </div>
                                     <div class="sp-seller-chip">
                                         <div class="sp-seller-avatar">@(item.Seller?.FullName?.Substring(0, 1) ?? "U")</div>
                                         <span>@(item.Seller?.FullName ?? "Sinh viên UniMarket")</span>
                                     </div>
-                                    <div style="margin-top:10px;">
+                                    <div  class="product-actions">
                                         <form asp-controller="Cart" asp-action="AddToCart" method="post" onclick="event.stopPropagation();">
                                             <input type="hidden" name="productId" value="@item.Id" />
                                             <input type="hidden" name="quantity" value="1" />
@@ -255,7 +255,7 @@
                             Thử tìm kiếm với từ khóa khác hoặc xóa bớt tiêu chí lọc để xem thêm sản phẩm.
                         </div>
                         <a asp-controller="MatHang" asp-action="IndexMH" class="btn btn-primary">
-                            ✕ Xóa bộ lọc &amp; xem tất cả
+                             Xóa bộ lọc &amp; xem tất cả
                         </a>
                     </div>
                 }
